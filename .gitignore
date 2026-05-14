@@ -1,0 +1,14 @@
+# Claude Code local settings (permissions, tokens)
+.claude/settings.local.json
+.claude/settings.json
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.log

@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Better Choice Tarot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="Better Choice Tarot mobile app">
+      <section class="screen">
+        <header class="app-header">
+          <button class="icon-button" aria-label="返回">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <div>
+            <p class="eyebrow">今日解惑</p>
+            <h1>Better Choice Tarot</h1>
+          </div>
+          <button class="icon-button" aria-label="历史记录">
+            <span aria-hidden="true">⌕</span>
+          </button>
+        </header>
+
+        <!-- ============================================
+        Page: Home
+        ============================================ -->
+        <div class="page active" data-page="home">
+
+          <!-- Module 0: Cosmic Energy Header -->
+          <section class="cosmic-header" aria-label="今日宇宙能量">
+            <div class="cosmic-topline">
+              <div>
+                <p class="eyebrow">今日宇宙能量</p>
+                <h2>内在罗盘正在校准</h2>
+                <div class="cosmic-meta">
+                  <span>5月13日 · 周二</span>
+                  <span class="moon-phase">
+                    <span class="moon-icon" aria-hidden="true"></span>
+                    上弦月
+                  </span>
+                </div>
+              </div>
+              <div class="score-ring" aria-label="今日能量指数 82">
+                <strong>82</strong>
+                <span>能量指数</span>
+              </div>
+            </div>
+            <div class="energy-bars" aria-label="能量维度">
+              <div>
+                <span>直觉</span>
+                <span class="energy-bar-track"></span>
+                <span class="energy-bar-fill" style="width: 88%"></span>
+                <em>强</em>
+              </div>
+              <div>
+                <span>行动</span>
+                <span class="energy-bar-track"></span>
+                <span class="energy-bar-fill" style="width: 72%"></span>
+                <em>稳</em>
+              </div>
+              <div>
+                <span>情绪</span>
+                <span class="energy-bar-track"></span>
+                <span class="energy-bar-fill" style="width: 64%"></span>
+                <em>需照看</em>
+              </div>
+            </div>
+          </section>
+
+          <!-- Module 1: Daily Tarot Hero (main visual focus) -->
+          <section class="daily-tarot-hero" aria-label="今日塔罗">
+            <div class="daily-tarot-inner">
+              <div class="daily-tarot-card" aria-hidden="true">
+                <b>☉</b>
+              </div>
+              <div class="daily-tarot-content">
+                <p class="eyebrow">今日启示 · 女祭司</p>
+                <h2>先确认真正想守护的东西</h2>
+                <p style="color: var(--ink-dim); font-size: 12px; line-height: 1.5; margin: 4px 0 0;">
+                  今天适合处理与边界、承诺和长期选择有关的问题。不要急着证明自己正确，先分清哪些是事实，哪些只是焦虑投下的影子。
+                </p>
+                <div class="daily-tarot-keywords">
+                  <span class="keyword-tag">直觉</span>
+                  <span class="keyword-tag warm">边界</span>
+                  <span class="keyword-tag soft">内省</span>
+                </div>
+              </div>
+            </div>
+            <button class="daily-tarot-draw-btn" data-action="draw-daily-card">抽取今日牌</button>
+          </section>
+
+          <!-- Module 2: Today's Action Cards -->
+          <section class="action-cards glass-panel" aria-label="今日行动卡">
+            <div class="section-header">
+              <h3>今日行动卡</h3>
+              <span class="completion-summary" id="actionSummary">0 / 3</span>
+            </div>
+            <p class="action-subtitle">完成今日卡牌给出的行动建议，将洞察变成行动。</p>
+            <div class="action-list" id="actionList">
+              <div class="action-item" data-action-id="1">
+                <div class="action-left">
+                  <span class="action-num">1</span>
+                  <p>主动联系一个想念的人，用一句话表达关心。</p>
+                </div>
+                <button class="action-check" aria-label="标记完成">
+                  <span class="check-ring"></span>
+                </button>
+              </div>
+              <div class="action-item" data-action-id="2">
+                <div class="action-left">
+                  <span class="action-num">2</span>
+                  <p>记录一次情绪，写下此刻最强烈的感受和触发原因。</p>
+                </div>
+                <button class="action-check" aria-label="标记完成">
+                  <span class="check-ring"></span>
+                </button>
+              </div>
+              <div class="action-item" data-action-id="3">
+                <div class="action-left">
+                  <span class="action-num">3</span>
+                  <p>避免冲动消费，今天购买非必需品前先等待 30 分钟。</p>
+                </div>
+                <button class="action-check" aria-label="标记完成">
+                  <span class="check-ring"></span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Module 3: Daily Advice -->
+          <section class="advice-list" aria-label="今日建议">
+            <div class="advice-item">
+              <span>1</span>
+              <p>把今天最重要的选择写成一个清晰的问题，避免同时问太多方向。</p>
+            </div>
+            <div class="advice-item">
+              <span>2</span>
+              <p>做决定前先确认底线：时间、金钱、关系或精力中哪一项不可透支。</p>
+            </div>
+          </section>
+
+          <!-- Module 4: Continue Your Tarot Journey -->
+          <section class="journey-sections" aria-label="继续你的占卜旅程">
+            <p class="journey-section-label">继续你的占卜旅程</p>
+            <button class="journey-entry" data-journey="relationship">
+              <span class="entry-card-icon rel" aria-hidden="true">♡</span>
+              <span>
+                <strong>感情关系</strong>
+                <small>探索关系中的选择与方向</small>
+              </span>
+              <span class="arrow">›</span>
+            </button>
+            <button class="journey-entry" data-journey="study">
+              <span class="entry-card-icon study" aria-hidden="true">◈</span>
+              <span>
+                <strong>学业成长</strong>
+                <small>寻找学习与进步的最佳路径</small>
+              </span>
+              <span class="arrow">›</span>
+            </button>
+            <button class="journey-entry" data-journey="work">
+              <span class="entry-card-icon work" aria-hidden="true">◆</span>
+              <span>
+                <strong>工作事业</strong>
+                <small>职业选择与发展方向指引</small>
+              </span>
+              <span class="arrow">›</span>
+            </button>
+            <button class="journey-entry" data-journey="social">
+              <span class="entry-card-icon social" aria-hidden="true">☷</span>
+              <span>
+                <strong>人际关系</strong>
+                <small>理解他人与自己内心的连接</small>
+              </span>
+              <span class="arrow">›</span>
+            </button>
+          </section>
+
+          <!-- Reading Entry -->
+          <button class="draw-entry" data-target="reading" aria-label="进入抽牌问问题">
+            <span class="entry-icon" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+            </span>
+            <strong>抽牌问问题</strong>
+            <small>进入专业塔罗师式问询流程</small>
+          </button>
+        </div>
+
+        <!-- ============================================
+        Page: Reading
+        ============================================ -->
+        <div class="page" data-page="reading">
+          <section class="reader-panel" aria-label="塔罗师引导">
+            <div class="reader-portrait" aria-hidden="true">
+              <div class="moon"></div>
+              <div class="veil"></div>
+            </div>
+            <div class="reader-copy">
+              <p class="reader-name">Mira · 专业塔罗师</p>
+              <p>先把问题说清楚，再抽牌。好的解读不是替你决定，而是把选择背后的代价、机会和盲点照亮。</p>
+            </div>
+          </section>
+
+          <section class="question-block" aria-label="问题澄清">
+            <div class="section-title">
+              <span>01</span>
+              <h2>你想问什么？</h2>
+            </div>
+            <textarea aria-label="输入你的问题" placeholder="例如：我该继续现在的工作，还是接受新的机会？"></textarea>
+            <div class="choice-row" aria-label="问题类型">
+              <button class="chip active">事业</button>
+              <button class="chip">关系</button>
+              <button class="chip">自我</button>
+              <button class="chip">金钱</button>
+            </div>
+            <button class="secondary-button" data-action="confirm-question" disabled>确认问题</button>
+          </section>
+
+          <section class="spread-block flow-hidden" aria-label="选择牌阵">
+            <div class="section-title">
+              <span>02</span>
+              <h2>选择牌阵</h2>
+            </div>
+            <div class="spread-selector">
+              <button class="spread-card selected" data-spread="抉择牌阵">
+                <span class="spread-icon three-card" aria-hidden="true"></span>
+                <strong>抉择牌阵</strong>
+                <small>现状 / 隐性影响 / 更好选择</small>
+              </button>
+              <button class="spread-card" data-spread="凯尔特十字">
+                <span class="spread-icon cross" aria-hidden="true"></span>
+                <strong>凯尔特十字</strong>
+                <small>适合复杂长期问题</small>
+              </button>
+            </div>
+          </section>
+
+          <section class="deck-stage flow-hidden" aria-label="洗牌抽牌">
+            <div class="section-title">
+              <span>03</span>
+              <h2>深呼吸，洗牌</h2>
+            </div>
+            <p class="flow-note">已选择 <strong data-selected-spread>抉择牌阵</strong>。请把注意力放回刚才的问题，再开始抽牌。</p>
+            <div class="deck-area">
+              <div class="deck-stack" aria-hidden="true">
+                <div class="tarot-back one"></div>
+                <div class="tarot-back two"></div>
+                <div class="tarot-back three"></div>
+              </div>
+              <div class="focus-meter">
+                <span class="meter-track">
+                  <span class="meter-fill" style="width: 87%"></span>
+                </span>
+                <strong>专注度 87%</strong>
+              </div>
+            </div>
+            <button class="primary-button" id="drawButton">开始抽牌</button>
+          </section>
+
+          <section class="result-block flow-hidden" aria-label="牌阵解读">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">牌阵已生成</p>
+                <h2>这次选择的关键</h2>
+              </div>
+              <button class="small-button" data-action="reset">重抽</button>
+            </div>
+
+            <div class="cards-row">
+              <article class="drawn-card">
+                <div class="card-face cups" aria-hidden="true">
+                  <span>Ⅷ</span>
+                  <b>☾</b>
+                </div>
+                <p>现状</p>
+                <strong>圣杯八 · 正位</strong>
+              </article>
+              <article class="drawn-card">
+                <div class="card-face swords reversed" aria-hidden="true">
+                  <span>Ⅱ</span>
+                  <b>✦</b>
+                </div>
+                <p>隐性影响</p>
+                <strong>宝剑二 · 逆位</strong>
+              </article>
+              <article class="drawn-card">
+                <div class="card-face wands" aria-hidden="true">
+                  <span>Ⅰ</span>
+                  <b>♢</b>
+                </div>
+                <p>更好选择</p>
+                <strong>权杖一 · 正位</strong>
+              </article>
+            </div>
+
+            <div class="reading-tabs" role="tablist" aria-label="解读维度">
+              <button class="tab active">总览</button>
+              <button class="tab">机会</button>
+              <button class="tab">风险</button>
+              <button class="tab">行动</button>
+            </div>
+
+            <article class="interpretation">
+              <p class="reader-name">塔罗师解读</p>
+              <p>你不是单纯想离开，而是在寻找更有生命力的工作状态。现在最大的阻力不是能力，而是害怕承认自己已经不满足。新机会值得认真推进，但不要用情绪性离职来证明决心。</p>
+            </article>
+
+            <section class="advice-list" aria-label="行动建议">
+              <div class="advice-item">
+                <span>1</span>
+                <p>先向新机会确认职责边界、成长空间和试用期标准。</p>
+              </div>
+              <div class="advice-item">
+                <span>2</span>
+                <p>给当前岗位设一个两周观察期，只看是否仍有可谈判的改变。</p>
+              </div>
+              <div class="advice-item">
+                <span>3</span>
+                <p>如果两个条件都成立：新机会更清晰，现岗位无实质变化，就选择前进。</p>
+              </div>
+            </section>
+          </section>
+        </div>
+
+        <!-- ============================================
+        Page: Deck (Card Library)
+        ============================================ -->
+        <div class="page" data-page="deck">
+          <section class="library-hero">
+            <p class="eyebrow">塔罗牌库</p>
+            <h2>学习每一张牌的内涵</h2>
+            <p>从大阿尔卡那到四元素牌组，逐张理解牌面象征、正逆位、常见误读和不同问题场景。</p>
+            <input class="library-search" placeholder="搜索牌名、元素或关键词" />
+            <div class="suit-filter" aria-label="牌组筛选">
+              <button class="chip active" data-suit="all">全部</button>
+              <button class="chip" data-suit="major">大阿尔卡那</button>
+              <button class="chip" data-suit="cups">圣杯</button>
+              <button class="chip" data-suit="swords">宝剑</button>
+              <button class="chip" data-suit="wands">权杖</button>
+              <button class="chip" data-suit="coins">星币</button>
+            </div>
+          </section>
+          <section class="card-library">
+            <article class="library-card" data-suit="cups">
+              <div class="mini-card cups"><b>☾</b></div>
+              <div>
+                <h3>圣杯八</h3>
+                <p>核心：离开消耗感，寻找更深层的满足。</p>
+                <dl>
+                  <dt>正位</dt>
+                  <dd>主动告别、精神转向、承认不再满足。</dd>
+                  <dt>逆位</dt>
+                  <dd>舍不得离开、反复回头、害怕空白期。</dd>
+                </dl>
+              </div>
+            </article>
+            <article class="library-card" data-suit="swords">
+              <div class="mini-card swords"><b>✦</b></div>
+              <div>
+                <h3>宝剑二</h3>
+                <p>核心：信息不足时的防御、迟疑和内在拉扯。</p>
+                <dl>
+                  <dt>正位</dt>
+                  <dd>暂缓判断、需要更多事实、保护边界。</dd>
+                  <dt>逆位</dt>
+                  <dd>逃避失效、真相浮现、必须面对选择。</dd>
+                </dl>
+              </div>
+            </article>
+            <article class="library-card" data-suit="wands">
+              <div class="mini-card wands"><b>♢</b></div>
+              <div>
+                <h3>权杖一</h3>
+                <p>核心：灵感点火，启动新计划。</p>
+                <dl>
+                  <dt>正位</dt>
+                  <dd>机会萌芽、行动欲、适合迈出第一步。</dd>
+                  <dt>逆位</dt>
+                  <dd>热情延迟、目标模糊、能量没有落地。</dd>
+                </dl>
+              </div>
+            </article>
+            <article class="library-card" data-suit="major">
+              <div class="mini-card major"><b>☉</b></div>
+              <div>
+                <h3>女祭司</h3>
+                <p>核心：直觉、隐秘知识、尚未显露的答案。</p>
+                <dl>
+                  <dt>学习提示</dt>
+                  <dd>不是"什么都不做"，而是先倾听沉默中的信息。</dd>
+                </dl>
+              </div>
+            </article>
+            <article class="library-card" data-suit="coins">
+              <div class="mini-card coins"><b>⌾</b></div>
+              <div>
+                <h3>星币六</h3>
+                <p>核心：资源流动、互惠、给予与接受的平衡。</p>
+                <dl>
+                  <dt>场景</dt>
+                  <dd>适合用于金钱、人情、合作与价值交换问题。</dd>
+                </dl>
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <!-- ============================================
+        Page: Journal
+        ============================================ -->
+        <div class="page" data-page="journal">
+          <section class="library-hero">
+            <p class="eyebrow">历史综合建议</p>
+            <h2>最近的选择主题很集中</h2>
+            <p>综合近 30 天的历史问题，你反复在"是否前进"和"如何修复关系"之间权衡。建议先把不可退让的底线写清楚，再决定要投入还是撤回。</p>
+            <div class="frequency-list journal-tags">
+              <span>先确认边界</span>
+              <span>减少反复验证</span>
+              <span>用行动检验直觉</span>
+            </div>
+          </section>
+          <section class="insight-panel" aria-label="问题类别统计">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">近 30 天</p>
+                <h2>问题类别统计</h2>
+              </div>
+              <strong style="color: var(--gold-light); font-size: 18px;">12 次</strong>
+            </div>
+            <div class="category-bars">
+              <div>
+                <span>事业</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 42%"></span>
+                <em>5</em>
+              </div>
+              <div>
+                <span>关系</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 25%"></span>
+                <em>3</em>
+              </div>
+              <div>
+                <span>自我</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 25%"></span>
+                <em>3</em>
+              </div>
+              <div>
+                <span>金钱</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 8%"></span>
+                <em>1</em>
+              </div>
+            </div>
+          </section>
+          <section class="timeline">
+            <button class="journal-item" data-history="career">
+              <span>今天</span>
+              <h3>是否接受新的工作机会？</h3>
+              <p>事业 · 抉择牌阵 · 3 张牌</p>
+            </button>
+            <button class="journal-item" data-history="relation">
+              <span>5 月 10 日</span>
+              <h3>该不该主动修复一段关系？</h3>
+              <p>关系 · 三牌牌阵 · 3 张牌</p>
+            </button>
+            <button class="journal-item" data-history="self">
+              <span>5 月 7 日</span>
+              <h3>我为什么总是推迟重要决定？</h3>
+              <p>自我 · 阻碍牌阵 · 4 张牌</p>
+            </button>
+          </section>
+          <section class="history-detail" aria-label="历史解读详情"></section>
+        </div>
+
+        <!-- ============================================
+        Page: Profile
+        ============================================ -->
+        <div class="page" data-page="profile">
+          <section class="profile-panel">
+            <div class="profile-head">
+              <div class="avatar">Z</div>
+              <button class="edit-profile">编辑档案</button>
+            </div>
+            <h2>2532571253zff-lab</h2>
+            <p>近 30 天共完成 12 次解读，事业类问题占比最高；你最常抽到宝剑组牌，说明当前主要课题是信息整理、边界和理性决策。</p>
+          </section>
+          <section class="stats-grid">
+            <div>
+              <strong>12</strong>
+              <span>近 30 天解读</span>
+            </div>
+            <div>
+              <strong id="executionRate">64%</strong>
+              <span>建议执行率</span>
+            </div>
+            <div>
+              <strong>5</strong>
+              <span>事业问题</span>
+            </div>
+          </section>
+          <section class="insight-panel">
+            <p class="eyebrow">指标说明</p>
+            <p class="detail-copy">建议执行率表示你在塔罗解读后，把行动建议标记为"已完成"的比例。它不是运势评分，而是帮助你追踪"有没有把洞察变成行动"。</p>
+          </section>
+          <section class="insight-panel">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">近期数据</p>
+                <h2>你的决策趋势</h2>
+              </div>
+            </div>
+            <div class="category-bars">
+              <div>
+                <span>事业</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 42%"></span>
+                <em>5 次</em>
+              </div>
+              <div>
+                <span>关系</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 25%"></span>
+                <em>3 次</em>
+              </div>
+              <div>
+                <span>自我</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 25%"></span>
+                <em>3 次</em>
+              </div>
+              <div>
+                <span>金钱</span>
+                <span class="category-bar-track"></span>
+                <span class="category-bar-fill" style="width: 8%"></span>
+                <em>1 次</em>
+              </div>
+            </div>
+          </section>
+          <section class="insight-panel">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">常见牌组</p>
+                <h2>本月出现频率</h2>
+              </div>
+            </div>
+            <div class="frequency-list">
+              <span>宝剑 6</span>
+              <span>圣杯 4</span>
+              <span>权杖 3</span>
+              <span>星币 2</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============================================
+        Bottom Navigation
+        ============================================ -->
+        <nav class="bottom-nav" aria-label="底部导航">
+          <button class="nav-item active" data-target="home">
+            <span class="nav-icon">✦</span>
+            首页
+          </button>
+          <button class="nav-item nav-center" data-target="reading">
+            <span class="nav-icon">☉</span>
+            占卜
+          </button>
+          <button class="nav-item" data-target="deck">
+            <span class="nav-icon">◈</span>
+            牌库
+          </button>
+          <button class="nav-item" data-target="journal">
+            <span class="nav-icon">☷</span>
+            复盘
+          </button>
+          <button class="nav-item" data-target="profile">
+            <span class="nav-icon">◌</span>
+            我的
+          </button>
+        </nav>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js"></script>
+  </body>
+</html>
