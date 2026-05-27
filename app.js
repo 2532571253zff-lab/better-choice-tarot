@@ -18,7 +18,7 @@ activateWithinGroup(".question-block .chip");
 activateWithinGroup(".tab");
 
 // ── Page navigation ──
-const showPage = (pageName) => {
+let showPage = (pageName) => {
   document.querySelectorAll(".page").forEach((page) => {
     page.classList.toggle("active", page.dataset.page === pageName);
   });
@@ -58,36 +58,6 @@ document.querySelector('[aria-label="返回"]').addEventListener("click", () => 
   }
 });
 
-// ── Journey entry buttons (homepage card entries → reading) ──
-document.querySelectorAll(".journey-entry").forEach((entry) => {
-  entry.addEventListener("click", () => {
-    const journey = entry.dataset.journey;
-    const categoryMap = {
-      relationship: "关系",
-      study: "自我",
-      work: "事业",
-      social: "关系",
-    };
-    const category = categoryMap[journey] || "事业";
-
-    resetReadingFlow();
-    showPage("reading");
-
-    // Pre-select the matching category chip
-    const readingPage = document.querySelector('[data-page="reading"]');
-    const chips = readingPage.querySelectorAll(".question-block .chip");
-    chips.forEach((chip) => {
-      chip.classList.toggle("active", chip.textContent.trim() === category);
-    });
-
-    // Focus the textarea
-    const qInput = readingPage.querySelector("textarea");
-    if (qInput) {
-      requestAnimationFrame(() => qInput.focus());
-    }
-  });
-});
-
 // ── Reading flow ──
 const readingPage = document.querySelector('[data-page="reading"]');
 const questionInput = readingPage.querySelector("textarea");
@@ -107,6 +77,21 @@ const resetReadingFlow = () => {
     item.classList.toggle("selected", index === 0);
   });
   if (selectedSpreadLabel) selectedSpreadLabel.textContent = "抉择牌阵";
+  // Reset draw button state
+  if (drawButton) {
+    drawButton.disabled = false;
+    drawButton.textContent = "开始抽牌";
+    isDrawing = false;
+  }
+  // Hide reflection card
+  const reflectionCard = document.getElementById("reflectionCard");
+  if (reflectionCard) reflectionCard.classList.add("flow-hidden");
+  const reflectionDone = document.getElementById("reflectionDone");
+  if (reflectionDone) reflectionDone.classList.add("flow-hidden");
+  const reflectionSubmit = document.getElementById("reflectionSubmit");
+  const reflectionInput = document.getElementById("reflectionInput");
+  if (reflectionSubmit) reflectionSubmit.classList.remove("flow-hidden");
+  if (reflectionInput) reflectionInput.disabled = false;
 };
 
 // Draw-entry button
@@ -144,18 +129,61 @@ document.querySelectorAll(".spread-card").forEach((button) => {
 
 // ── Draw button with stardust particles ──
 const drawButton = document.getElementById("drawButton");
-drawButton?.addEventListener("click", (e) => {
-  // Spawn stardust particles
-  spawnParticles(e.currentTarget);
+let isDrawing = false;
 
-  // Show results after a short delay (simulating card reveal)
+if (!drawButton) {
+  console.warn("[Better Choice Tarot] #drawButton not found in DOM");
+}
+
+drawButton?.addEventListener("click", (e) => {
+  if (isDrawing) return;
+  isDrawing = true;
+
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = "正在感应...";
+
+  try {
+    spawnParticles(btn);
+  } catch (err) {
+    console.warn("[Better Choice Tarot] spawnParticles failed:", err);
+  }
+
   setTimeout(() => {
-    resultBlock.classList.remove("flow-hidden");
-    resultBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-    // Add fade-in animation to drawn cards
-    resultBlock.querySelectorAll(".drawn-card").forEach((card, i) => {
-      card.style.animation = `fadeIn 0.5s var(--ease-soft) ${i * 0.12}s both`;
-    });
+    try {
+      if (resultBlock) {
+        resultBlock.classList.remove("flow-hidden");
+        resultBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+        resultBlock.querySelectorAll(".drawn-card").forEach((card, i) => {
+          card.style.animation = `fadeIn 0.5s var(--ease-soft) ${i * 0.12}s both`;
+        });
+      }
+    } catch (err) {
+      console.warn("[Better Choice Tarot] resultBlock error:", err);
+    }
+
+    // Save to question history
+    const qText = questionInput?.value.trim();
+    const activeChip = readingPage.querySelector(".question-block .chip.active");
+    const category = activeChip?.textContent.trim() || "其他";
+    const spread = selectedSpreadLabel?.textContent || "抉择牌阵";
+    if (qText) {
+      addQuestionToHistory(qText, category, spread);
+    }
+
+    // Show Reflection Card after a pause
+    setTimeout(() => {
+      try {
+        showReflectionCard();
+      } catch (err) {
+        console.warn("[Better Choice Tarot] showReflectionCard error:", err);
+      }
+    }, 1200);
+
+    // Re-enable button
+    btn.disabled = false;
+    btn.textContent = "重新感应";
+    isDrawing = false;
   }, 600);
 });
 
@@ -164,6 +192,140 @@ document.querySelector('[data-action="reset"]')?.addEventListener("click", () =>
   resetReadingFlow();
   document.querySelector(".question-block")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
+
+// ── iOS Bottom Sheet: Mood Logging ──
+
+window._emotions = window._emotions || {};
+
+const moodModule = document.getElementById("emotionModule");
+const moodOverlay = document.getElementById("moodOverlay");
+const moodSlider = document.getElementById("moodSlider");
+const moodScaleBtns = document.querySelectorAll(".mood-dot");
+const moodTags = document.querySelectorAll(".mood-tag");
+const moodStateDefault = document.getElementById("moodStateDefault");
+const moodStateRecorded = document.getElementById("moodStateRecorded");
+const moodSaveBtn = document.getElementById("moodSaveBtn");
+
+const moodLabels = { 1: "很低落", 2: "有点down", 3: "平静", 4: "还不错", 5: "很愉快" };
+const moodColors = { 1: "blue", 2: "blue", 3: "purple", 4: "pink", 5: "gold" };
+
+const getTodayKey = () => new Date().toISOString().slice(0, 10);
+const getTodayMood = () => window._emotions[getTodayKey()];
+
+const updateMoodModule = () => {
+  const todayMood = getTodayMood();
+  if (todayMood) {
+    moodStateDefault?.classList.add("flow-hidden");
+    moodStateRecorded?.classList.remove("flow-hidden");
+    const valueEl = document.getElementById("moodRecordedValue");
+    if (valueEl) {
+      const tags = todayMood.tags?.length ? ` · ${todayMood.tags.join("、")}` : "";
+      valueEl.textContent = `${todayMood.label}${tags}`;
+    }
+  } else {
+    moodStateDefault?.classList.remove("flow-hidden");
+    moodStateRecorded?.classList.add("flow-hidden");
+  }
+};
+
+// Open bottom sheet from homepage module
+moodModule?.addEventListener("click", (e) => {
+  if (e.target.closest(".mood-re-record")) {
+    delete window._emotions[getTodayKey()];
+    updateMoodModule();
+    openMoodSheet();
+    return;
+  }
+  if (e.target.closest(".mood-dot")) return;
+  openMoodSheet();
+});
+
+// Mood dots on homepage — quick select
+moodScaleBtns.forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    quickRecordMood(parseInt(btn.dataset.level));
+  });
+});
+
+const quickRecordMood = (level) => {
+  const today = getTodayKey();
+  window._emotions[today] = {
+    level,
+    label: moodLabels[level],
+    color: moodColors[level],
+    tags: [],
+    note: "",
+    time: new Date().toISOString(),
+  };
+  updateMoodModule();
+  updateJourneyStats();
+  spawnActionSparks(moodModule, 6);
+};
+
+const openMoodSheet = () => {
+  if (!moodOverlay) return;
+
+  // Restore previous state or defaults
+  const prev = getTodayMood();
+  moodSlider.value = prev?.level || 3;
+  moodTags.forEach((tag) => {
+    tag.classList.toggle("selected", prev?.tags?.includes(tag.dataset.emotion));
+  });
+
+  // Lock body scroll
+  document.body.style.overflow = "hidden";
+
+  // Reset sheet scroll position
+  const sheet = moodOverlay.querySelector(".mood-sheet");
+  if (sheet) sheet.scrollTop = 0;
+
+  // Add .active — CSS transition handles the rest (no display:none involved)
+  moodOverlay.classList.add("active");
+};
+
+const closeMoodSheet = () => {
+  if (!moodOverlay) return;
+  moodOverlay.classList.remove("active");
+  document.body.style.overflow = "";
+};
+
+// Save button
+moodSaveBtn?.addEventListener("click", () => {
+  const today = getTodayKey();
+  const level = parseInt(moodSlider.value);
+  const tags = [];
+  moodTags.forEach((tag) => {
+    if (tag.classList.contains("selected")) tags.push(tag.dataset.emotion);
+  });
+  window._emotions[today] = {
+    level,
+    label: moodLabels[level],
+    color: moodColors[level],
+    tags,
+    note: "",
+    time: new Date().toISOString(),
+  };
+  closeMoodSheet();
+  updateMoodModule();
+  updateJourneyStats();
+  spawnActionSparks(moodModule, 8);
+});
+
+// Mood tag toggle
+moodTags.forEach((tag) => {
+  tag.addEventListener("click", () => {
+    tag.classList.toggle("selected");
+  });
+});
+
+// Close on overlay tap
+moodOverlay?.addEventListener("click", (e) => {
+  if (e.target === moodOverlay) closeMoodSheet();
+});
+
+// Init
+updateMoodModule();
 
 // ── Daily Card Draw (homepage) ──
 const dailyDrawBtn = document.querySelector('[data-action="draw-daily-card"]');
@@ -218,7 +380,322 @@ document.querySelectorAll(".suit-filter .chip").forEach((button) => {
   });
 });
 
-// ── History Data ──
+// ── Reflection Card Logic ──
+const reflectionQuestions = [
+  "你真正害怕失去的是什么？",
+  "最近有没有一个瞬间，让你觉得自己被忽视了？",
+  "如果没有任何限制，你此刻最想做什么？",
+  "今天有没有一句话，你其实很想对某个人说？",
+  "你正在为什么事情感到内疚？",
+  "如果你可以放下一个念头，它会是什么？",
+  "你最近是否太习惯一个人承担问题了？",
+  "你真正想要的是改变，还是被理解？",
+];
+
+const getCardReflection = () => {
+  // Cards drawn in result block — use first card's suit to seed question
+  const firstCard = resultBlock?.querySelector(".drawn-card strong");
+  const cardName = firstCard?.textContent || "";
+  if (cardName.includes("圣杯")) return "你最近一次感到被滋养，是什么时候？";
+  if (cardName.includes("宝剑")) return "有什么真相你一直不敢对自己承认？";
+  if (cardName.includes("权杖")) return "如果勇气不是问题，你的第一步会是什么？";
+  if (cardName.includes("星币")) return "此刻你最想守住的是什么？";
+  if (cardName.includes("女祭司")) return "你最近是否太习惯一个人承担问题了？";
+  return reflectionQuestions[Math.floor(Math.random() * reflectionQuestions.length)];
+};
+
+const showReflectionCard = () => {
+  const card = document.getElementById("reflectionCard");
+  const question = document.getElementById("reflectionQuestion");
+  const input = document.getElementById("reflectionInput");
+  const done = document.getElementById("reflectionDone");
+  if (!card) return;
+
+  const q = getCardReflection();
+  if (question) question.textContent = q;
+  if (input) input.value = "";
+  card.classList.remove("flow-hidden", "meteor-exit");
+  if (done) done.classList.add("flow-hidden");
+  if (input) input.parentElement?.querySelector(".reflection-submit")?.classList.remove("flow-hidden");
+
+  card.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+const reflectionSubmit = document.getElementById("reflectionSubmit");
+const reflectionInput = document.getElementById("reflectionInput");
+reflectionSubmit?.addEventListener("click", () => {
+  const text = reflectionInput?.value.trim();
+  if (!text) return;
+
+  // Save to in-memory store
+  const today = new Date().toISOString().slice(0, 10);
+  window._reflections = window._reflections || {};
+  window._reflections[today] = {
+    question: document.getElementById("reflectionQuestion")?.textContent || "",
+    answer: text,
+    time: new Date().toISOString(),
+  };
+
+  // Spawn gentle particles
+  spawnActionSparks(reflectionSubmit, 8);
+
+  // Show done state
+  reflectionSubmit.classList.add("flow-hidden");
+  reflectionInput.disabled = true;
+  const done = document.getElementById("reflectionDone");
+  if (done) done.classList.remove("flow-hidden");
+
+  // Record completion
+  markActionGlobal("reflection_done");
+
+  // After a brief pause, meteor-exit the entire reflection card
+  const card = document.getElementById("reflectionCard");
+  if (card) {
+    setTimeout(() => {
+      card.classList.add("meteor-exit");
+      card.addEventListener("animationend", () => {
+        card.classList.add("flow-hidden");
+        card.classList.remove("meteor-exit");
+        // Reset for next reading
+        if (done) done.classList.add("flow-hidden");
+        reflectionSubmit.classList.remove("flow-hidden");
+        reflectionInput.disabled = false;
+      }, { once: true });
+    }, 900);
+  }
+});
+
+// ── Journey Calendar Generation ──
+const generateStarCalendar = () => {
+  const calendar = document.getElementById("starCalendar");
+  if (!calendar) return;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-indexed
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+
+  const emotions = window._emotions || {};
+  const moodColorMap = { blue: "blue", purple: "purple", pink: "pink", gold: "gold" };
+  const defaultColors = ["gold", "gold", "purple", "blue", "pink", "gold", "purple", "gold", "pink", "gold", "blue", "gold", "purple", "gold"];
+  const todayDate = today.getDate();
+
+  const getDayColor = (d) => {
+    const ds = `2026-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const mood = emotions[ds];
+    if (mood?.color) return moodColorMap[mood.color] || "gold";
+    if (d <= todayDate) return defaultColors[d % defaultColors.length];
+    return "empty";
+  };
+
+  const getHasData = (d) => {
+    if (d > todayDate) return false;
+    const ds = `2026-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    return !!emotions[ds] || !!window._reflections?.[ds] || d <= todayDate;
+  };
+
+  let html = "";
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="calendar-day"><span class="day-num"></span><span class="day-dot empty"></span></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const color = getDayColor(d);
+    const isToday = d === todayDate ? " today" : "";
+    const hasData = getHasData(d);
+    html += `
+      <div class="calendar-day${isToday}" data-day="${d}" ${hasData ? `data-has-data="true"` : ""}>
+        <span class="day-num">${d}</span>
+        <span class="day-dot ${color}"></span>
+      </div>`;
+  }
+
+  calendar.innerHTML = html;
+
+  calendar.querySelectorAll(".calendar-day[data-has-data]").forEach((dayEl) => {
+    dayEl.addEventListener("click", () => {
+      showDayDetail(dayEl.dataset.day);
+    });
+  });
+};
+
+const showDayDetail = (day) => {
+  const panel = document.getElementById("dayDetail");
+  if (!panel) return;
+
+  const month = new Date().getMonth() + 1;
+  const dateStr = `2026-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const reflections = window._reflections || {};
+  const emotions = window._emotions || {};
+  const dayReflection = reflections[dateStr];
+  const dayMood = emotions[dateStr];
+
+  const sampleCards = ["圣杯八 · 正位", "宝剑二 · 逆位", "女祭司 · 正位", "权杖一 · 正位"];
+  const sampleQuestions = ["是否接受新的工作机会？", "该不该主动修复一段关系？", "我为什么总是推迟重要决定？"];
+  const card = sampleCards[day % sampleCards.length];
+  const question = sampleQuestions[day % sampleQuestions.length];
+  const reflection = dayReflection?.answer || "今天没有记录，但没关系。";
+
+  const emotionLabel = dayMood
+    ? `${dayMood.label}${dayMood.tags?.length ? ` (${dayMood.tags.join("、")})` : ""}`
+    : ["金色·积极", "紫色·平静", "蓝色·焦虑", "粉色·温暖"][day % 4];
+
+  panel.innerHTML = `
+    <p class="detail-date">5月${day}日</p>
+    ${dayMood ? `<p class="detail-mood">今日情绪：${dayMood.label} ${dayMood.note ? `— "${dayMood.note}"` : ""}</p>` : ""}
+    <p class="detail-card-name">${card}</p>
+    <p style="color: var(--ink-dim); font-size: 12px; margin-bottom: 8px;">问题：${question}</p>
+    <p class="detail-reflection">"${reflection}"</p>
+    <div class="detail-meta">
+      ${dayReflection ? '<span>✦ 已反思</span>' : '<span>◌ 未记录</span>'}
+      <span>情绪：${emotionLabel}</span>
+    </div>
+  `;
+  panel.classList.add("open");
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+};
+
+// Generate calendar when navigating to Journey page
+const origShowPage = showPage;
+showPage = (pageName) => {
+  origShowPage(pageName);
+  if (pageName === "journal") {
+    setTimeout(generateStarCalendar, 100);
+    updateJourneyStats();
+  }
+  if (pageName === "profile") {
+    updateExecutionRate();
+    updateProfileSummary();
+  }
+};
+
+// Update journey hero stats
+const updateJourneyStats = () => {
+  const reflections = window._reflections || {};
+  const days = Object.keys(reflections).length;
+  const awarenessEl = document.getElementById("awarenessDays");
+  const labelEl = document.getElementById("awarenessLabel");
+  if (awarenessEl) awarenessEl.textContent = Math.max(12, days);
+  if (labelEl) labelEl.textContent = Math.max(12, days);
+};
+
+// Update profile growth summary
+const updateProfileSummary = () => {
+  const reflections = window._reflections || {};
+  const totalReflections = Object.keys(reflections).length;
+  const profilePanel = document.querySelector(".profile-panel p:not(.eyebrow)");
+  if (profilePanel && totalReflections > 0) {
+    // Keep the original text but could be extended
+  }
+};
+
+// ── Global action marker for non-card actions ──
+const markActionGlobal = (actionKey) => {
+  if (completedActions.has(actionKey)) return;
+  completedActions.add(actionKey);
+  updateActionSummary();
+  updateJourneyStats();
+};
+
+// ── Question History ──
+const readingHistory = [];
+
+const addQuestionToHistory = (question, category, spread) => {
+  const now = new Date();
+  const dateStr = `${now.getMonth() + 1} 月 ${now.getDate()} 日`;
+  const historyId = `reading_${Date.now()}`;
+
+  // Collect card names from the result block
+  const cardNames = [];
+  const drawnCards = resultBlock?.querySelectorAll(".drawn-card strong");
+  drawnCards?.forEach((el) => cardNames.push(el.textContent));
+
+  // Collect advice items
+  const adviceItems = [];
+  resultBlock?.querySelectorAll(".advice-item p").forEach((el) => adviceItems.push(el.textContent));
+
+  // Store
+  readingHistory.unshift({
+    id: historyId,
+    title: question,
+    category,
+    spread,
+    date: dateStr,
+    cards: cardNames,
+    advice: adviceItems,
+  });
+
+  // Build journal item
+  const questionList = document.getElementById("questionList");
+  if (!questionList) return;
+
+  const item = document.createElement("button");
+  item.className = "journal-item";
+  item.dataset.history = historyId;
+  item.style.animation = "fadeIn 0.4s var(--ease-soft) both";
+  item.innerHTML = `
+    <span>${dateStr}</span>
+    <h3>${question}</h3>
+    <p>${category} · ${spread} · ${cardNames.length} 张牌</p>
+  `;
+
+  questionList.prepend(item);
+};
+
+// Event delegation for journal items (handles both static and dynamic)
+document.getElementById("questionList")?.addEventListener("click", (e) => {
+  const item = e.target.closest(".journal-item");
+  if (!item) return;
+
+  const historyId = item.dataset.history;
+  const detail = document.querySelector(".history-detail");
+  if (!detail) return;
+
+  // Check static data first, then dynamic
+  let data = historyData[historyId];
+  if (!data) {
+    const dynamic = readingHistory.find((r) => r.id === historyId);
+    if (dynamic) {
+      data = {
+        title: dynamic.title,
+        cards: dynamic.cards.map((name, i) => {
+          const suits = ["cups", "swords", "wands", "coins"];
+          return [suits[i % 4], "?", "✦", ["现状", "阻碍", "建议"][i] || "提示", name];
+        }),
+        advice: dynamic.advice.length
+          ? `当时建议：${dynamic.advice.join("；")}`
+          : "记录你的感受比答案更重要。",
+      };
+    }
+  }
+
+  if (!data) return;
+
+  detail.classList.add("open");
+  detail.innerHTML = `
+    <p class="eyebrow">历史详情</p>
+    <h2>${data.title}</h2>
+    <div class="cards-row compact-cards">
+      ${data.cards
+        .map(
+          ([tone, number, symbol, label, name]) => `
+            <article class="drawn-card" style="animation: fadeIn 0.4s var(--ease-soft) both;">
+              <div class="card-face ${tone}" aria-hidden="true"><span>${number}</span><b>${symbol}</b></div>
+              <p>${label}</p>
+              <strong>${name}</strong>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+    <p class="detail-copy">${data.advice}</p>
+  `;
+  item.insertAdjacentElement("afterend", detail);
+  detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+});
+
+// ── Static History Data ──
 const historyData = {
   career: {
     title: "是否接受新的工作机会？",
@@ -248,35 +725,6 @@ const historyData = {
     advice: "当时建议：把选择拆成可验证的小步骤，先收集事实，再给自己一个明确的决定期限。",
   },
 };
-
-const detail = document.querySelector(".history-detail");
-
-document.querySelectorAll(".journal-item").forEach((item) => {
-  item.addEventListener("click", () => {
-    const data = historyData[item.dataset.history];
-    detail.classList.add("open");
-    detail.innerHTML = `
-      <p class="eyebrow">历史详情</p>
-      <h2>${data.title}</h2>
-      <div class="cards-row compact-cards">
-        ${data.cards
-          .map(
-            ([tone, number, symbol, label, name]) => `
-              <article class="drawn-card" style="animation: fadeIn 0.4s var(--ease-soft) both;">
-                <div class="card-face ${tone}" aria-hidden="true"><span>${number}</span><b>${symbol}</b></div>
-                <p>${label}</p>
-                <strong>${name}</strong>
-              </article>
-            `,
-          )
-          .join("")}
-      </div>
-      <p class="detail-copy">${data.advice}</p>
-    `;
-    item.insertAdjacentElement("afterend", detail);
-    detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  });
-});
 
 // ── Edit Profile ──
 document.querySelector(".edit-profile")?.addEventListener("click", () => {

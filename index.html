@@ -99,7 +99,7 @@
               <h3>今日行动卡</h3>
               <span class="completion-summary" id="actionSummary">0 / 3</span>
             </div>
-            <p class="action-subtitle">完成今日卡牌给出的行动建议，将洞察变成行动。</p>
+            <p class="action-subtitle">当你准备好了，轻轻点一下。不必追求全部完成。</p>
             <div class="action-list" id="actionList">
               <div class="action-item" data-action-id="1">
                 <div class="action-left">
@@ -131,53 +131,89 @@
             </div>
           </section>
 
-          <!-- Module 3: Daily Advice -->
-          <section class="advice-list" aria-label="今日建议">
-            <div class="advice-item">
-              <span>1</span>
-              <p>把今天最重要的选择写成一个清晰的问题，避免同时问太多方向。</p>
+          <!-- Module 2B: Mood Check-in (Apple Health style) -->
+          <section class="emotion-module" aria-label="此刻情绪" id="emotionModule">
+            <p class="emotion-label">此刻情绪</p>
+            <div class="mood-state" id="moodStateDefault">
+              <p class="mood-prompt">现在感觉如何？</p>
+              <div class="mood-scale" id="moodScale">
+                <button class="mood-dot" data-level="1" data-label="很低落" aria-label="很低落">
+                  <span class="mood-face">☽</span>
+                </button>
+                <button class="mood-dot" data-level="2" data-label="有点down" aria-label="有点down">
+                  <span class="mood-face">◯</span>
+                </button>
+                <button class="mood-dot" data-level="3" data-label="平静" aria-label="平静">
+                  <span class="mood-face">◎</span>
+                </button>
+                <button class="mood-dot" data-level="4" data-label="还不错" aria-label="还不错">
+                  <span class="mood-face">◉</span>
+                </button>
+                <button class="mood-dot" data-level="5" data-label="很愉快" aria-label="很愉快">
+                  <span class="mood-face">✦</span>
+                </button>
+              </div>
             </div>
-            <div class="advice-item">
-              <span>2</span>
-              <p>做决定前先确认底线：时间、金钱、关系或精力中哪一项不可透支。</p>
+            <div class="mood-state flow-hidden" id="moodStateRecorded">
+              <p class="mood-recorded-label">今日已记录</p>
+              <p class="mood-recorded-value" id="moodRecordedValue"></p>
+              <button class="mood-re-record">重新记录</button>
             </div>
           </section>
 
-          <!-- Module 4: Continue Your Tarot Journey -->
-          <section class="journey-sections" aria-label="继续你的占卜旅程">
-            <p class="journey-section-label">继续你的占卜旅程</p>
-            <button class="journey-entry" data-journey="relationship">
-              <span class="entry-card-icon rel" aria-hidden="true">♡</span>
-              <span>
-                <strong>感情关系</strong>
-                <small>探索关系中的选择与方向</small>
-              </span>
-              <span class="arrow">›</span>
-            </button>
-            <button class="journey-entry" data-journey="study">
-              <span class="entry-card-icon study" aria-hidden="true">◈</span>
-              <span>
-                <strong>学业成长</strong>
-                <small>寻找学习与进步的最佳路径</small>
-              </span>
-              <span class="arrow">›</span>
-            </button>
-            <button class="journey-entry" data-journey="work">
-              <span class="entry-card-icon work" aria-hidden="true">◆</span>
-              <span>
-                <strong>工作事业</strong>
-                <small>职业选择与发展方向指引</small>
-              </span>
-              <span class="arrow">›</span>
-            </button>
-            <button class="journey-entry" data-journey="social">
-              <span class="entry-card-icon social" aria-hidden="true">☷</span>
-              <span>
-                <strong>人际关系</strong>
-                <small>理解他人与自己内心的连接</small>
-              </span>
-              <span class="arrow">›</span>
-            </button>
+          <!-- iOS Bottom Sheet: Mood Logging -->
+          <div class="mood-overlay" id="moodOverlay">
+            <div class="mood-sheet" role="dialog" aria-label="记录此刻情绪">
+              <div class="sheet-handle" aria-hidden="true"></div>
+              <p class="sheet-title">现在感觉如何？</p>
+
+              <div class="mood-slider-track">
+                <div class="mood-slider-gradient"></div>
+                <input type="range" min="1" max="5" value="3" class="mood-slider" id="moodSlider">
+                <div class="mood-slider-labels">
+                  <span>很低落</span>
+                  <span>有点down</span>
+                  <span>平静</span>
+                  <span>还不错</span>
+                  <span>很愉快</span>
+                </div>
+              </div>
+
+              <p class="sheet-section-label">哪些词能描述此刻的感受？</p>
+              <div class="mood-tags-grid" id="moodTagsGrid">
+                <button class="mood-tag" data-emotion="焦虑">焦虑</button>
+                <button class="mood-tag" data-emotion="平静">平静</button>
+                <button class="mood-tag" data-emotion="开心">开心</button>
+                <button class="mood-tag" data-emotion="疲惫">疲惫</button>
+                <button class="mood-tag" data-emotion="期待">期待</button>
+                <button class="mood-tag" data-emotion="孤独">孤独</button>
+                <button class="mood-tag" data-emotion="感恩">感恩</button>
+                <button class="mood-tag" data-emotion="迷茫">迷茫</button>
+                <button class="mood-tag" data-emotion="满足">满足</button>
+                <button class="mood-tag" data-emotion="压力">压力</button>
+                <button class="mood-tag" data-emotion="放松">放松</button>
+                <button class="mood-tag" data-emotion="难过">难过</button>
+              </div>
+
+              <button class="mood-save-btn" id="moodSaveBtn">记录这个感受</button>
+            </div>
+          </div>
+
+          <!-- Module 4B: Recent Growth Trajectory -->
+          <section class="growth-trajectory glass-panel" aria-label="最近成长轨迹">
+            <div class="trajectory-header">
+              <h4>最近成长轨迹</h4>
+              <span class="trajectory-label">近 7 天</span>
+            </div>
+            <div class="mini-star-trail" aria-hidden="true">
+              <span class="star-node purple"></span><span class="trail-line"></span>
+              <span class="star-node blue"></span><span class="trail-line"></span>
+              <span class="star-node gold"></span><span class="trail-line"></span>
+              <span class="star-node pink"></span><span class="trail-line"></span>
+              <span class="star-node gold"></span><span class="trail-line"></span>
+              <span class="star-node dim"></span><span class="trail-line"></span>
+              <span class="star-node gold"></span>
+            </div>
           </section>
 
           <!-- Reading Entry -->
@@ -325,6 +361,19 @@
                 <p>如果两个条件都成立：新机会更清晰，现岗位无实质变化，就选择前进。</p>
               </div>
             </section>
+
+            <!-- Reflection Card (core healing interaction) -->
+            <section class="reflection-card flow-hidden" aria-label="Reflection" id="reflectionCard">
+              <p class="reflection-eyebrow">轻声问自己</p>
+              <p class="reflection-question" id="reflectionQuestion">你真正害怕失去的是什么？</p>
+              <p class="reflection-hint">不需要完美的答案，写下最先浮现在心里的那个念头就好。</p>
+              <textarea class="reflection-input" id="reflectionInput" placeholder="写下你的感受..."></textarea>
+              <button class="reflection-submit" id="reflectionSubmit">记录这个想法</button>
+              <div class="reflection-done flow-hidden" id="reflectionDone">
+                <span class="reflection-done-icon">✧</span>
+                <p>感想已记录。</p>
+              </div>
+            </section>
           </section>
         </div>
 
@@ -412,70 +461,86 @@
         </div>
 
         <!-- ============================================
-        Page: Journal
+        Page: Journey (Emotional Growth Trajectory)
         ============================================ -->
         <div class="page" data-page="journal">
-          <section class="library-hero">
-            <p class="eyebrow">历史综合建议</p>
-            <h2>最近的选择主题很集中</h2>
-            <p>综合近 30 天的历史问题，你反复在"是否前进"和"如何修复关系"之间权衡。建议先把不可退让的底线写清楚，再决定要投入还是撤回。</p>
-            <div class="frequency-list journal-tags">
-              <span>先确认边界</span>
-              <span>减少反复验证</span>
-              <span>用行动检验直觉</span>
+          <!-- Hero: Awareness Counter -->
+          <section class="journey-hero">
+            <p class="eyebrow">成长轨迹</p>
+            <div class="awareness-counter" id="awarenessDays">12</div>
+            <p class="awareness-label">你已经连续观察自己 <strong id="awarenessLabel">12</strong> 天</p>
+            <p class="monthly-theme">本月主题：重新学习面对自己</p>
+          </section>
+
+          <!-- Star Trail Calendar -->
+          <section aria-label="情绪星轨日历">
+            <div class="section-title" style="padding: 0 16px; margin-bottom: 6px;">
+              <span>✦</span>
+              <h2>五月 · 情绪星轨</h2>
+            </div>
+            <div class="star-calendar" id="starCalendar">
+              <!-- Generated by JS -->
             </div>
           </section>
-          <section class="insight-panel" aria-label="问题类别统计">
+
+          <!-- Day Detail Panel -->
+          <section class="day-detail-panel" id="dayDetail" aria-label="每日详情"></section>
+
+          <!-- Monthly Summary -->
+          <section class="insight-panel" aria-label="月度总结" style="margin-top: 16px;">
             <div class="result-header">
               <div>
-                <p class="eyebrow">近 30 天</p>
-                <h2>问题类别统计</h2>
+                <p class="eyebrow">五月总结</p>
+                <h2>你在慢慢变好</h2>
               </div>
-              <strong style="color: var(--gold-light); font-size: 18px;">12 次</strong>
             </div>
             <div class="category-bars">
               <div>
-                <span>事业</span>
+                <span>觉察</span>
                 <span class="category-bar-track"></span>
-                <span class="category-bar-fill" style="width: 42%"></span>
-                <em>5</em>
+                <span class="category-bar-fill" style="width: 78%"></span>
+                <em>高</em>
               </div>
               <div>
-                <span>关系</span>
+                <span>执行</span>
                 <span class="category-bar-track"></span>
-                <span class="category-bar-fill" style="width: 25%"></span>
-                <em>3</em>
+                <span class="category-bar-fill" style="width: 64%"></span>
+                <em>稳</em>
               </div>
               <div>
-                <span>自我</span>
+                <span>情绪</span>
                 <span class="category-bar-track"></span>
-                <span class="category-bar-fill" style="width: 25%"></span>
-                <em>3</em>
-              </div>
-              <div>
-                <span>金钱</span>
-                <span class="category-bar-track"></span>
-                <span class="category-bar-fill" style="width: 8%"></span>
-                <em>1</em>
+                <span class="category-bar-fill" style="width: 58%"></span>
+                <em>回升中</em>
               </div>
             </div>
           </section>
-          <section class="timeline">
-            <button class="journal-item" data-history="career">
-              <span>今天</span>
-              <h3>是否接受新的工作机会？</h3>
-              <p>事业 · 抉择牌阵 · 3 张牌</p>
-            </button>
-            <button class="journal-item" data-history="relation">
-              <span>5 月 10 日</span>
-              <h3>该不该主动修复一段关系？</h3>
-              <p>关系 · 三牌牌阵 · 3 张牌</p>
-            </button>
-            <button class="journal-item" data-history="self">
-              <span>5 月 7 日</span>
-              <h3>我为什么总是推迟重要决定？</h3>
-              <p>自我 · 阻碍牌阵 · 4 张牌</p>
-            </button>
+
+          <!-- Question History -->
+          <section class="question-history" aria-label="问题历史">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">问题历史</p>
+                <h2>你曾向宇宙发问</h2>
+              </div>
+            </div>
+            <div class="question-list" id="questionList">
+              <button class="journal-item" data-history="career">
+                <span>今天</span>
+                <h3>是否接受新的工作机会？</h3>
+                <p>事业 · 抉择牌阵 · 3 张牌</p>
+              </button>
+              <button class="journal-item" data-history="relation">
+                <span>5 月 10 日</span>
+                <h3>该不该主动修复一段关系？</h3>
+                <p>关系 · 三牌牌阵 · 3 张牌</p>
+              </button>
+              <button class="journal-item" data-history="self">
+                <span>5 月 7 日</span>
+                <h3>我为什么总是推迟重要决定？</h3>
+                <p>自我 · 阻碍牌阵 · 4 张牌</p>
+              </button>
+            </div>
           </section>
           <section class="history-detail" aria-label="历史解读详情"></section>
         </div>
@@ -490,7 +555,7 @@
               <button class="edit-profile">编辑档案</button>
             </div>
             <h2>2532571253zff-lab</h2>
-            <p>近 30 天共完成 12 次解读，事业类问题占比最高；你最常抽到宝剑组牌，说明当前主要课题是信息整理、边界和理性决策。</p>
+            <p>最近你更关注事业与自我成长。你最常抽到宝剑组牌，说明现在的主要课题是在理性与直觉之间找到平衡。</p>
           </section>
           <section class="stats-grid">
             <div>
@@ -578,7 +643,7 @@
           </button>
           <button class="nav-item" data-target="journal">
             <span class="nav-icon">☷</span>
-            复盘
+            轨迹
           </button>
           <button class="nav-item" data-target="profile">
             <span class="nav-icon">◌</span>
