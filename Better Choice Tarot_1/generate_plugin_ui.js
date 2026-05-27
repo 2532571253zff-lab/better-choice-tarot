@@ -1,0 +1,216 @@
+/**
+ * Generate the Figma plugin UI HTML with all JSON data embedded.
+ */
+const fs = require("fs");
+const path = require("path");
+
+const framesDir = path.join(__dirname, "figma_frames");
+const outputPath = path.join(__dirname, "figma_plugin", "ui.html");
+
+const frameFiles = [
+  { file: "01_home.json", name: "01 Home" },
+  { file: "02_home_bottom_sheet.json", name: "02 Home + Bottom Sheet" },
+  { file: "03_reading_question.json", name: "03 Reading - Question" },
+  { file: "04_reading_spread.json", name: "04 Reading - Spread" },
+  { file: "05_reading_deck.json", name: "05 Reading - Deck" },
+  { file: "06_reading_result.json", name: "06 Reading - Result" },
+  { file: "07_deck_library.json", name: "07 Deck Library" },
+  { file: "08_journey.json", name: "08 Journey - Calendar" },
+  { file: "09_journey_day_detail.json", name: "09 Journey - Day Detail" },
+  { file: "10_profile.json", name: "10 Profile" },
+];
+
+const frames = [];
+for (const { file, name } of frameFiles) {
+  const filePath = path.join(framesDir, file);
+  if (fs.existsSync(filePath)) {
+    const layers = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    frames.push({ name, layers });
+    console.log("  OK Loaded " + file + " (" + layers.length + " nodes)");
+  } else {
+    console.warn("  MISSING: " + file);
+  }
+}
+
+const dataJson = JSON.stringify(frames);
+console.log("\nTotal frames: " + frames.length);
+console.log("Data size: " + Math.round(dataJson.length / 1024) + " KB");
+
+// Build UI HTML using string concatenation to avoid template-literal-escaping hell
+const html = [
+  '<!DOCTYPE html>',
+  '<html>',
+  '<head>',
+  '  <meta charset="UTF-8">',
+  '  <style>',
+  '    * { margin: 0; padding: 0; box-sizing: border-box; }',
+  '    body {',
+  '      font-family: Inter, system-ui, sans-serif;',
+  '      background: #1a1633;',
+  '      color: #f0e9d8;',
+  '      padding: 20px;',
+  '      min-height: 100vh;',
+  '    }',
+  '    h1 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }',
+  '    .subtitle { font-size: 11px; color: rgba(240,233,216,0.5); margin-bottom: 20px; }',
+  '    .frame-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }',
+  '    .frame-item {',
+  '      display: flex; align-items: center; gap: 10px;',
+  '      padding: 8px 12px;',
+  '      background: rgba(20,17,41,0.5);',
+  '      border: 1px solid rgba(216,179,106,0.12);',
+  '      border-radius: 8px; font-size: 12px;',
+  '    }',
+  '    .frame-item.selected {',
+  '      border-color: rgba(216,179,106,0.35);',
+  '      background: rgba(216,179,106,0.06);',
+  '    }',
+  '    .frame-item input { accent-color: #d8b36a; }',
+  '    .frame-item label { flex: 1; cursor: pointer; }',
+  '    .frame-item .count { font-size: 10px; color: rgba(240,233,216,0.4); }',
+  '    .btn-row { display: flex; gap: 8px; }',
+  '    button {',
+  '      padding: 10px 20px; border: none; border-radius: 12px;',
+  '      font-size: 13px; font-weight: 600; cursor: pointer;',
+  '      transition: transform 0.15s ease;',
+  '    }',
+  '    button:active { transform: scale(0.97); }',
+  '    .btn-primary {',
+  '      flex: 1;',
+  '      background: linear-gradient(135deg, #d8b36a, #8a6a38);',
+  '      color: #12101a;',
+  '    }',
+  '    .btn-secondary {',
+  '      background: rgba(240,233,216,0.08);',
+  '      color: #f0e9d8;',
+  '      border: 1px solid rgba(216,179,106,0.15);',
+  '    }',
+  '    .btn-select {',
+  '      font-size: 11px; padding: 6px 12px;',
+  '      background: transparent;',
+  '      color: rgba(240,233,216,0.5);',
+  '      border: 1px solid rgba(240,233,216,0.1);',
+  '      border-radius: 6px;',
+  '    }',
+  '    .progress { margin-top: 14px; font-size: 11px; color: #d8b36a; }',
+  '    .progress-bar {',
+  '      height: 4px; margin-top: 6px; border-radius: 2px;',
+  '      background: rgba(240,233,216,0.08); overflow: hidden;',
+  '    }',
+  '    .progress-fill {',
+  '      height: 100%;',
+  '      background: linear-gradient(90deg, #d8b36a, #8b6eff);',
+  '      width: 0%; transition: width 0.3s ease;',
+  '    }',
+  '    .status { margin-top: 10px; font-size: 11px; color: rgba(240,233,216,0.5); }',
+  '  </style>',
+  '</head>',
+  '<body>',
+  '  <h1>Better Choice Tarot</h1>',
+  '  <p class="subtitle">Import frames into Figma</p>',
+  '  <div class="frame-list" id="frameList"></div>',
+  '  <div style="margin-bottom:12px;display:flex;gap:6px;">',
+  '    <button class="btn-select" id="selectAll">Select All</button>',
+  '    <button class="btn-select" id="deselectAll">Deselect All</button>',
+  '  </div>',
+  '  <div class="btn-row">',
+  '    <button class="btn-primary" id="importBtn">Import Selected</button>',
+  '    <button class="btn-secondary" id="cancelBtn">Cancel</button>',
+  '  </div>',
+  '  <div class="progress" id="progress" style="display:none;">',
+  '    <span id="progressText"></span>',
+  '    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>',
+  '  </div>',
+  '  <div class="status" id="status"></div>',
+  '  <script>',
+  '    var FRAMES_DATA = ' + dataJson + ';',
+  '',
+  '    var frameList = document.getElementById("frameList");',
+  '    var importBtn = document.getElementById("importBtn");',
+  '    var progressEl = document.getElementById("progress");',
+  '    var progressText = document.getElementById("progressText");',
+  '    var progressFill = document.getElementById("progressFill");',
+  '    var statusEl = document.getElementById("status");',
+  '',
+  '    FRAMES_DATA.forEach(function(frame, i) {',
+  '      var div = document.createElement("div");',
+  '      div.className = "frame-item selected";',
+  '      div.innerHTML = "<input type=\\"checkbox\\" id=\\"frame" + i + "\\" checked>" +',
+  '        "<label for=\\"frame" + i + "\\">" + frame.name + "</label>" +',
+  '        "<span class=\\"count\\">" + (Array.isArray(frame.layers) ? frame.layers.length : 0) + " nodes</span>";',
+  '      frameList.appendChild(div);',
+  '    });',
+  '',
+  '    document.getElementById("selectAll").onclick = function() {',
+  '      document.querySelectorAll(".frame-item input").forEach(function(cb) {',
+  '        cb.checked = true; cb.parentElement.classList.add("selected");',
+  '      });',
+  '    };',
+  '',
+  '    document.getElementById("deselectAll").onclick = function() {',
+  '      document.querySelectorAll(".frame-item input").forEach(function(cb) {',
+  '        cb.checked = false; cb.parentElement.classList.remove("selected");',
+  '      });',
+  '    };',
+  '',
+  '    frameList.addEventListener("change", function(e) {',
+  '      if (e.target.type === "checkbox") {',
+  '        e.target.parentElement.classList.toggle("selected", e.target.checked);',
+  '      }',
+  '    });',
+  '',
+  '    document.getElementById("cancelBtn").onclick = function() {',
+  '      parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");',
+  '    };',
+  '',
+  '    importBtn.onclick = function() {',
+  '      var selected = [];',
+  '      document.querySelectorAll(".frame-item input").forEach(function(cb, i) {',
+  '        if (cb.checked) selected.push(FRAMES_DATA[i]);',
+  '      });',
+  '      if (selected.length === 0) {',
+  '        statusEl.textContent = "Please select at least one frame.";',
+  '        return;',
+  '      }',
+  '      importBtn.disabled = true;',
+  '      progressEl.style.display = "block";',
+  '      statusEl.textContent = "Creating frames...";',
+  '      parent.postMessage({',
+  '        pluginMessage: {',
+  '          type: "create-frames",',
+  '          frames: selected,',
+  '          pageName: "Better Choice Tarot"',
+  '        }',
+  '      }, "*");',
+  '    };',
+  '',
+  '    window.onmessage = function(event) {',
+  '      var msg = event.data.pluginMessage;',
+  '      if (!msg) return;',
+  '      if (msg.type === "progress") {',
+  '        var pct = Math.round((msg.current / msg.total) * 100);',
+  '        progressText.textContent = "Creating " + msg.current + " / " + msg.total;',
+  '        progressFill.style.width = pct + "%";',
+  '      }',
+  '      if (msg.type === "done") {',
+  '        progressText.textContent = "Done!";',
+  '        progressFill.style.width = "100%";',
+  '        statusEl.textContent = "\\u2705 All frames imported successfully. You can close this window.";',
+  '        importBtn.disabled = false;',
+  '      }',
+  '    };',
+  '  </script>',
+  '</body>',
+  '</html>',
+].join("\n");
+
+fs.writeFileSync(outputPath, html, "utf-8");
+console.log("\nDONE Plugin UI written to: " + outputPath);
+console.log("Size: " + Math.round(html.length / 1024) + " KB");
+console.log("");
+console.log("Next step:");
+console.log("  1. Open Figma Desktop");
+console.log('  2. Menu: Plugins → Development → "Import plugin from manifest..."');
+console.log("  3. Select: " + path.join(__dirname, "figma_plugin", "manifest.json"));
+console.log('  4. Run: Plugins → Development → "Better Choice Tarot — Import Frames"');
+console.log("  5. Select frames → Click Import Selected");

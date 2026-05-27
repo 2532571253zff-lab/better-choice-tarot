@@ -1,0 +1,65 @@
+﻿我需要把「此刻情绪」模块改成 iOS 风格的 Bottom Sheet 交互，而不是页面跳转。
+
+当前问题：
+点击「此刻情绪」后，滑轨模块被渲染到了页面顶部，破坏了页面布局。
+
+我希望修改成：
+
+【交互结构】
+- 点击「此刻情绪」卡片后
+- 从屏幕底部弹出一个 Bottom Sheet
+- Bottom Sheet 高度约占屏幕 45%~55%
+- 使用 fixed 定位
+- 固定在 viewport 底部
+- 带圆角顶部（24px 左右）
+
+【背景处理】
+Bottom Sheet 出现时：
+- 原页面不要消失
+- 原页面保持可见
+- 上方区域增加：
+  - 深色半透明遮罩
+  - backdrop blur 模糊
+- 整体类似 iOS modal presentation
+
+背景建议：
+background: rgba(5,5,10,0.45)
+backdrop-filter: blur(12px)
+
+【Bottom Sheet 内容】
+底部弹层中放置：
+- “现在感觉如何？”
+- 情绪滑轨
+- 情绪标签
+- 确认按钮
+
+【动画要求】
+- 从底部缓慢上滑
+- 使用 ease-out
+- 动画时长约 300ms
+- 不要使用游戏感动画
+
+【视觉要求】
+风格保持：
+- 深紫黑背景
+- 微发光
+- 神秘疗愈感
+- iOS 风格沉浸体验
+
+【技术要求】
+请不要把模块插入正常页面流中。
+
+应使用：
+- position: fixed
+- bottom: 0
+- left: 0
+- width: 100%
+- z-index 高于页面
+
+并增加：
+- overlay 层
+- backdrop blur
+
+当前结构更适合：
+Bottom Sheet / Modal
+而不是 route page。
